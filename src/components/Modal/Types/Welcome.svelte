@@ -1,8 +1,15 @@
 <script>
 	import { difficulty as difficultyStore } from '@sudoku/stores/difficulty';
-	import { startNew, startCustom } from '@sudoku/game';
 	import { validateSencode } from '@sudoku/sencode';
 	import { DIFFICULTIES } from '@sudoku/constants';
+	import { gameStore } from '@sudoku/stores/gameStore';
+	import { grid } from '@sudoku/stores/grid';
+	import { cursor } from '@sudoku/stores/cursor';
+	import { timer } from '@sudoku/stores/timer';
+	import { hints } from '@sudoku/stores/hints';
+	import { difficulty as diffSetter } from '@sudoku/stores/difficulty';
+	import { gamePaused } from '@sudoku/stores/game';
+	import { get } from 'svelte/store';
 
 	export let data = {};
 	export let hideModal;
@@ -15,10 +22,22 @@
 
 	function handleStart() {
 		if (validateSencode(sencode)) {
-			startCustom(sencode);
+			diffSetter.setCustom();
+			grid.decodeSencode(sencode);
 		} else {
-			startNew(difficulty);
+			diffSetter.set(difficulty);
+			grid.generate(difficulty);
 		}
+
+		// 从原始 grid store 取出刚生成的题面，传给领域对象
+		const puzzleGrid = get(grid);
+		gameStore.startNew(puzzleGrid);
+
+		cursor.reset();
+		timer.reset();
+		hints.reset();
+		gamePaused.set(false);
+		location.hash = '';
 
 		hideModal();
 	}

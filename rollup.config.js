@@ -1,6 +1,7 @@
 import commonjs from '@rollup/plugin-commonjs';
 import resolve from '@rollup/plugin-node-resolve';
 import { writeFileSync } from 'fs';
+import path from 'path';
 import copy from 'rollup-plugin-copy';
 import css from 'rollup-plugin-css-only';
 import livereload from 'rollup-plugin-livereload';
@@ -17,7 +18,7 @@ const preprocess = sveltePreprocess({
 			require('postcss-import'),
 			require('tailwindcss'),
 			require('autoprefixer'),
-			...(production ? [require('postcss-clean')] : []),
+			...(production ? [require('cssnano')({ preset: 'default' })] : []),
 		],
 	},
 	defaults: {
@@ -71,6 +72,9 @@ export default {
 		resolve({
 			browser: true,
 			dedupe:  ['svelte'],
+			alias: {
+				'@domain': path.resolve(__dirname, 'src/domain'),
+			},
 		}),
 		commonjs(),
 
